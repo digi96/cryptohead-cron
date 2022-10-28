@@ -1,13 +1,17 @@
+import * as dotenv from 'dotenv';
 import { ethers } from "ethers";
 import { headProfileAbi } from "./abi/HeadProfile";
-var url = "http://127.0.0.1:8545";
+
+
+dotenv.config();
+var url = process.env.APP_PROVIDER_URL;
 var customHttpProvider = new ethers.providers.JsonRpcProvider(url);
 const signer = new ethers.Wallet(
-  "0xac0974bec39a17e36ba4a6b4d238ff944bacb478cbed5efcae784d7bf4f2ff80",
+  process.env.APP_CONTRACT_OWNER_KEY,
   customHttpProvider
 );
 var headProfileContract = new ethers.Contract(
-  "0x5FbDB2315678afecb367f032d93F642f64180aa3",
+  process.env.APP_CONTRACT_ADDRESS,
   headProfileAbi,
   signer
 );
