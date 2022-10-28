@@ -18,38 +18,30 @@ var headProfileContract = new ethers_1.ethers.Contract("0x5FbDB2315678afecb367f0
 customHttpProvider.getBlockNumber().then((result) => {
     console.log("Current block number:" + result);
 });
-function init() {
+function listenProfileCreation() {
     return __awaiter(this, void 0, void 0, function* () {
-        console.log("Executed now");
-        //await delay(1000);
-        yield testA();
-        console.log("end");
-    });
-}
-function delay(milliseconds) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, milliseconds);
-    });
-}
-function testA() {
-    return __awaiter(this, void 0, void 0, function* () {
-        console.log("waiting for event...");
-        var filter = {
-            address: "0x5FbDB2315678afecb367f032d93F642f64180aa3",
-            topics: [
-                "0x123f26a2e49413178f9987a12875a1c3699d80db989d54b4fce93c6a5e9050ec",
-            ],
-        };
-        customHttpProvider.on(filter, (log) => {
-            console.log("New profile has been created");
-            console.log(log);
-        });
-        headProfileContract.on("ProfileCreated", (log) => {
+        console.log("Waiting for profile creation event...");
+        headProfileContract.on("ProfileCreated", (userId, userType, displayName, email) => {
             console.log("New profile created");
-            console.log(log);
+            console.log(userId.toNumber());
+            console.log(userType);
+            console.log(displayName);
+            console.log(email);
         });
-        //await delay(100000);
     });
 }
-init();
+function main() {
+    return __awaiter(this, void 0, void 0, function* () {
+        listenProfileCreation();
+        console.log("Press any key to quit...");
+        process.stdin.on("data", (data) => {
+            console.log(`\nYou typed ${data.toString()}`);
+            process.exit();
+        });
+    });
+}
+main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+});
 //# sourceMappingURL=send-verification.js.map
