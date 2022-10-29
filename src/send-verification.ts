@@ -33,8 +33,18 @@ async function listenProfileCreation() {
   );
 }
 
+async function listenEmailVerificationRequested(){
+  console.log("Waiting for email verification requested event...");
+  headProfileContract.on("EmailVerificationRequested", async (address, email) => {
+    //get user's email verifiction number
+    const resultInfo = await headProfileContract.getProfileInfoByAddress(address);  
+    console.log("send email to:"+ email + ", verification number:"+ resultInfo["emailVerifyNumber"]);
+  });
+}
+
 async function main() {
   listenProfileCreation();
+  listenEmailVerificationRequested();
 
   console.log("Press any key to quit...");
 
