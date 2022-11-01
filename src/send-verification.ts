@@ -1,8 +1,7 @@
-import * as dotenv from 'dotenv';
-import axios from 'axios';
+import * as dotenv from "dotenv";
+import axios from "axios";
 import { ethers } from "ethers";
 import { headProfileAbi } from "./abi/HeadProfile";
-
 
 dotenv.config();
 var url = process.env.APP_PROVIDER_URL;
@@ -34,46 +33,57 @@ async function listenProfileCreation() {
   );
 }
 
-async function listenEmailVerificationRequested(){
+async function listenEmailVerificationRequested() {
   console.log("Waiting for email verification requested event...");
-  headProfileContract.on("EmailVerificationRequested", async (address, email) => {
-    //get user's email verifiction number
-    const resultInfo = await headProfileContract.getProfileInfoByAddress(address);  
-    console.log("send email to:"+ email + ", verification number:"+ resultInfo["emailVerifyNumber"]);
+  headProfileContract.on(
+    "EmailVerificationRequested",
+    async (address, email) => {
+      //get user's email verifiction number
+      const resultInfo = await headProfileContract.getProfileInfoByAddress(
+        address
+      );
+      if (resultInfo["isEmailVerified"].toString() == "true") {
+        return;
+      }
 
-    try{
-    
-      await axios({
-        url: '/api/v1.0/email/send',
-        method: 'post',
-        baseURL: 'https://api.emailjs.com',
-        data: {
-          service_id: process.env.APP_EMAILJS_SERVICE_ID,
-          template_id: process.env.APP_EMAILJS_TEMPLATE_ID,
-          user_id: process.env.APP_EMAILJS_USER_ID,
-          accessToken: process.env.APP_EMAILJS_ACCESSTOKEN,
-          template_params: {
-              'email': email,
-              'team_name': 'CryptoHead',
-              'message': resultInfo["emailVerifyNumber"].toString()
-          }
+      console.log(
+        "send email to:" +
+          email +
+          ", verification number:" +
+          resultInfo["emailVerifyNumber"]
+      );
+
+      try {
+        await axios({
+          url: "/api/v1.0/email/send",
+          method: "post",
+          baseURL: "https://api.emailjs.com",
+          data: {
+            service_id: process.env.APP_EMAILJS_SERVICE_ID,
+            template_id: process.env.APP_EMAILJS_TEMPLATE_ID,
+            user_id: process.env.APP_EMAILJS_USER_ID,
+            accessToken: process.env.APP_EMAILJS_ACCESSTOKEN,
+            template_params: {
+              email: email,
+              team_name: "CryptoHead",
+              message: resultInfo["emailVerifyNumber"].toString(),
+            },
+          },
+        }).then(function (response) {
+          console.log(response);
+        });
+      } catch (error) {
+        if (axios.isAxiosError(error)) {
+          console.log("error message: ", error.message);
+          // 👇️ error: AxiosError<any, any>
+          return error.message;
+        } else {
+          console.log("unexpected error: ", error);
+          return "An unexpected error occurred";
         }
-      }).then(function(response){
-        console.log(response);
-      })
-    }
-    catch(error){
-      if (axios.isAxiosError(error)) {
-        console.log('error message: ', error.message);
-        // 👇️ error: AxiosError<any, any>
-        return error.message;
-      } else {
-        console.log('unexpected error: ', error);
-        return 'An unexpected error occurred';
       }
     }
-    
-  });
+  );
 }
 
 async function main() {
